@@ -1,0 +1,87 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: consultation-db
+    environment:
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
+      POSTGRES_DB: ${DB_DATABASE:-consultation}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - consultation-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend (NestJS)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: consultation-backend
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USERNAME=${DB_USERNAME:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-password}
+      - DB_DATABASE=${DB_DATABASE:-consultation}
+      - JWT_SECRET=${JWT_SECRET:-your-secret-key}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-24h}
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - consultation-network
+
+  # Frontend Admin (React - 상담사 페이지)
+  frontend-admin:
+    build:
+      context: ./frontend-admin
+      dockerfile: Dockerfile
+    container_name: consultation-admin
+    environment:
+      - VITE_API_URL=http://localhost:4000
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend-admin:/app
+      - /app/node_modules
+    networks:
+      - consultation-network
+
+  # Frontend Client (React - 신청자 페이지)
+  frontend-client:
+    build:
+      context: ./frontend-client
+      dockerfile: Dockerfile
+    container_name: consultation-client
+    environment:
+      - VITE_API_URL=http://localhost:4000
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./frontend-client:/app
+      - /app/node_modules
+    networks:
+      - consultation-network
+
+volumes:
+  postgres_data:
+
+networks:
+  consultation-network:
+    driver: bridge
