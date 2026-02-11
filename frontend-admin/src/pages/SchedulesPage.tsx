@@ -9,7 +9,7 @@ interface Schedule {
   startTime: string;
   endTime: string;
   maxCapacity: number;
-  bookings?: { id: string }[];
+  currentBookings: number;
 }
 
 export default function SchedulesPage() {
@@ -163,7 +163,7 @@ export default function SchedulesPage() {
                         {s.startTime.slice(0, 5)} ~ {s.endTime.slice(0, 5)}
                       </span>
                       <span style={{ marginLeft: 12, fontSize: 13, color: '#64748b' }}>
-                        예약 {s.bookings?.length ?? 0}/{s.maxCapacity}명
+                        예약 {s.currentBookings}/{s.maxCapacity}명
                       </span>
                     </div>
                     <div style={{ display: 'flex', gap: 6 }}>

@@ -9,8 +9,8 @@ interface Schedule {
   date: string;
   startTime: string;
   endTime: string;
-  maxCapacity: number;
-  bookings: { id: string }[];
+  available: boolean;
+  remainingSlots: number;
 }
 
 interface CounselorInfo {
@@ -157,8 +157,7 @@ export default function BookingPage() {
               {daySchedules
                 .sort((a, b) => a.startTime.localeCompare(b.startTime))
                 .map((s) => {
-                  const booked = s.bookings?.length ?? 0;
-                  const full = booked >= s.maxCapacity;
+                  const full = !s.available;
                   const selected = selectedScheduleId === s.id;
                   return (
                     <button
@@ -182,7 +181,7 @@ export default function BookingPage() {
                         {s.startTime.slice(0, 5)} ~ {s.endTime.slice(0, 5)}
                       </span>
                       <span style={{ fontSize: 13, color: full ? '#ef4444' : '#64748b' }}>
-                        {full ? '마감' : `${booked}/${s.maxCapacity}명`}
+                        {full ? '마감' : `잔여 ${s.remainingSlots}명`}
                       </span>
                     </button>
                   );

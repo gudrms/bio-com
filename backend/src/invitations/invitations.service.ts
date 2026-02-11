@@ -42,12 +42,19 @@ export class InvitationsService {
     const counselor = await this.counselorRepository.findOneBy({
       id: counselorId,
     });
+    console.log('[Invitation] counselor:', counselor ? counselor.name : 'not found');
+    console.log('[Invitation] 수신자:', dto.recipientEmail);
+    console.log('[Invitation] 링크:', link);
+
     if (counselor) {
-      await this.emailService.sendInvitationEmail(
+      const result = await this.emailService.sendInvitationEmail(
         dto.recipientEmail,
         counselor.name,
         link,
       );
+      console.log('[Invitation] 이메일 발송 결과:', result);
+    } else {
+      console.log('[Invitation] 상담사를 찾을 수 없어 이메일 미발송');
     }
 
     return {

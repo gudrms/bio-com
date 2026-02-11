@@ -36,6 +36,10 @@ services:
       - DB_DATABASE=${DB_DATABASE:-consultation}
       - JWT_SECRET=${JWT_SECRET:-your-secret-key}
       - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-24h}
+      - SMTP_HOST=${SMTP_HOST:-smtp.gmail.com}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASS=${SMTP_PASS}
     ports:
       - "4000:4000"
     volumes:

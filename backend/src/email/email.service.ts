@@ -7,13 +7,19 @@ export class EmailService {
   private transporter: nodemailer.Transporter;
 
   constructor(private readonly configService: ConfigService) {
+    const smtpUser = this.configService.get<string>('SMTP_USER');
+    const smtpPass = this.configService.get<string>('SMTP_PASS');
+
+    console.log('[EmailService] SMTP_USER:', smtpUser ? `${smtpUser.substring(0, 3)}***` : 'undefined');
+    console.log('[EmailService] SMTP_PASS:', smtpPass ? '설정됨' : 'undefined');
+
     this.transporter = nodemailer.createTransport({
       host: this.configService.get<string>('SMTP_HOST', 'smtp.gmail.com'),
       port: this.configService.get<number>('SMTP_PORT', 587),
       secure: false,
       auth: {
-        user: this.configService.get<string>('SMTP_USER'),
-        pass: this.configService.get<string>('SMTP_PASS'),
+        user: smtpUser,
+        pass: smtpPass,
       },
     });
   }

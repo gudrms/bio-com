@@ -5,7 +5,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
+import { Repository, DataSource, Not } from 'typeorm';
 import { Booking, BookingStatus, Schedule, InvitationLink } from '../entities';
 import { CreateBookingDto } from './dto/create-booking.dto';
 
@@ -37,11 +37,10 @@ export class BookingsService {
 
     // 2. 트랜잭션 + 비관적 락으로 동시성 제어
     return this.dataSource.transaction(async (manager) => {
-      // 비관적 락으로 스케줄 조회
+      // 비관적 락으로 스케줄 조회 (relations 없이)
       const schedule = await manager.findOne(Schedule, {
         where: { id: dto.scheduleId },
         lock: { mode: 'pessimistic_write' },
-        relations: ['bookings'],
       });
 
       if (!schedule) {
@@ -49,11 +48,14 @@ export class BookingsService {
       }
 
       // 3. 현재 예약 수 확인 (취소된 예약 제외)
-      const activeBookings = schedule.bookings.filter(
-        (b) => b.status !== BookingStatus.CANCELLED,
-      );
+      const activeBookingCount = await manager.count(Booking, {
+        where: {
+          scheduleId: dto.scheduleId,
+          status: Not(BookingStatus.CANCELLED),
+        },
+      });
 
-      if (activeBookings.length >= schedule.maxCapacity) {
+      if (activeBookingCount >= schedule.maxCapacity) {
         throw new ConflictException('해당 시간대 예약이 마감되었습니다.');
       }
 

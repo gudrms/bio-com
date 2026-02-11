@@ -26,7 +26,7 @@ export default function CompletePage() {
           </div>
         )}
         <p style={{ marginTop: 20, fontSize: 13, color: '#94a3b8' }}>
-          예약 확인 이메일이 발송됩니다.
+          {/*/예약 확인 이메일이 발송됩니다.*/}
         </p>
       </div>
     </div>

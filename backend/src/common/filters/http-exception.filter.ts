@@ -17,6 +17,10 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     let message = '서버 내부 오류가 발생했습니다.';
     let code = 'INTERNAL_ERROR';
 
+    if (!(exception instanceof HttpException)) {
+      console.error('[UnhandledException]', exception);
+    }
+
     if (exception instanceof HttpException) {
       status = exception.getStatus();
       const exceptionResponse = exception.getResponse();
