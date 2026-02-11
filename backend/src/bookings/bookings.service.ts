@@ -83,6 +83,7 @@ export class BookingsService {
     const queryBuilder = this.bookingRepository
       .createQueryBuilder('booking')
       .innerJoinAndSelect('booking.schedule', 'schedule')
+      .leftJoinAndSelect('booking.consultationRecord', 'record')
       .where('schedule.counselorId = :counselorId', { counselorId });
 
     if (scheduleId) {
@@ -103,12 +104,16 @@ export class BookingsService {
       schedule: {
         date: booking.schedule.date,
         startTime: booking.schedule.startTime,
+        endTime: booking.schedule.endTime,
       },
       clientName: booking.clientName,
       clientEmail: booking.clientEmail,
       clientPhone: booking.clientPhone,
       status: booking.status,
       createdAt: booking.createdAt,
+      consultationRecord: booking.consultationRecord
+        ? { id: booking.consultationRecord.id, notes: booking.consultationRecord.notes }
+        : null,
     }));
   }
 
