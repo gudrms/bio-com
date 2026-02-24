@@ -28,7 +28,10 @@ import { EmailModule } from './email/email.module';
         password: configService.get<string>('DB_PASSWORD', 'password'),
         database: configService.get<string>('DB_DATABASE', 'consultation'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        synchronize: true,
+        migrations: [__dirname + '/migrations/*{.ts,.js}'],
+        // synchronize는 개발 초기에만 사용, 프로덕션에서는 migration으로 관리
+        synchronize: configService.get<string>('NODE_ENV') !== 'production',
+        migrationsRun: configService.get<string>('NODE_ENV') === 'production',
       }),
     }),
     AuthModule,

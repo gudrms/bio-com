@@ -35,6 +35,10 @@ export class BookingsService {
       throw new BadRequestException('만료된 초대 토큰입니다.');
     }
 
+    if (invitation.isUsed) {
+      throw new BadRequestException('이미 사용된 초대 토큰입니다.');
+    }
+
     // 2. 트랜잭션 + 비관적 락으로 동시성 제어
     return this.dataSource.transaction(async (manager) => {
       // 비관적 락으로 스케줄 조회 (relations 없이)
@@ -69,6 +73,13 @@ export class BookingsService {
       });
 
       const saved = await manager.save(Booking, booking);
+
+      // 5. 초대 토큰 사용 완료 처리
+      await manager.update(
+        InvitationLink,
+        { token: dto.token },
+        { isUsed: true },
+      );
 
       return {
         id: saved.id,

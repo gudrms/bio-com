@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between } from 'typeorm';
-import { Schedule } from '../entities';
+import { Schedule, BookingStatus } from '../entities';
 import { CreateScheduleDto } from './dto/create-schedule.dto';
 import { UpdateScheduleDto } from './dto/update-schedule.dto';
 
@@ -30,14 +30,19 @@ export class SchedulesService {
       order: { date: 'ASC', startTime: 'ASC' },
     });
 
-    return schedules.map((schedule) => ({
-      id: schedule.id,
-      date: schedule.date,
-      startTime: schedule.startTime,
-      endTime: schedule.endTime,
-      maxCapacity: schedule.maxCapacity,
-      currentBookings: schedule.bookings?.length ?? 0,
-    }));
+    return schedules.map((schedule) => {
+      const activeBookings = schedule.bookings?.filter(
+        (b) => b.status !== BookingStatus.CANCELLED,
+      ) ?? [];
+      return {
+        id: schedule.id,
+        date: schedule.date,
+        startTime: schedule.startTime,
+        endTime: schedule.endTime,
+        maxCapacity: schedule.maxCapacity,
+        currentBookings: activeBookings.length,
+      };
+    });
   }
 
   async create(counselorId: string, dto: CreateScheduleDto) {
@@ -138,14 +143,17 @@ export class SchedulesService {
     });
 
     return schedules.map((schedule) => {
-      const currentBookings = schedule.bookings?.length ?? 0;
+      const activeBookings = schedule.bookings?.filter(
+        (b) => b.status !== BookingStatus.CANCELLED,
+      ) ?? [];
+      const count = activeBookings.length;
       return {
         id: schedule.id,
         date: schedule.date,
         startTime: schedule.startTime,
         endTime: schedule.endTime,
-        available: currentBookings < schedule.maxCapacity,
-        remainingSlots: schedule.maxCapacity - currentBookings,
+        available: count < schedule.maxCapacity,
+        remainingSlots: schedule.maxCapacity - count,
       };
     });
   }
