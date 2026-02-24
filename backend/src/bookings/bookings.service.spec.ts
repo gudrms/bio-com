@@ -7,7 +7,7 @@ import { Booking, BookingStatus, Schedule, InvitationLink } from '../entities';
 
 describe('BookingsService', () => {
   let service: BookingsService;
-  let mockDataSource: Partial<DataSource>;
+  let mockDataSource: Record<string, any>;
   let mockBookingRepo: Partial<Repository<Booking>>;
   let mockScheduleRepo: Partial<Repository<Schedule>>;
   let mockInvitationRepo: Partial<Repository<InvitationLink>>;
